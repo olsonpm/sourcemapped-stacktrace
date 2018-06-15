@@ -30,7 +30,6 @@ var global_mapForUri = {}
 var mapStackTrace = function(stack, done, opts) {
   var lines
   var line
-  var mapForUri = {}
   var rows = {}
   var fields
   var uri
@@ -172,9 +171,7 @@ Fetcher.prototype.onScriptLoad = function(xhr, uri) {
       )
 
       if (embeddedSourceMap && embeddedSourceMap[2]) {
-        this.mapForUri[uri] = new source_map_consumer.SourceMapConsumer(
-          atob(embeddedSourceMap[2])
-        )
+        this.mapForUri[uri] = new SourceMapConsumer(atob(embeddedSourceMap[2]))
         this.sem.decr()
       } else {
         if (!absUrlRegex.test(mapUri)) {
@@ -195,9 +192,7 @@ Fetcher.prototype.onScriptLoad = function(xhr, uri) {
             xhr.status === 200 ||
             (mapUri.slice(0, 7) === 'file://' && xhr.status === 0)
           ) {
-            this.mapForUri[uri] = new source_map_consumer.SourceMapConsumer(
-              xhr.responseText
-            )
+            this.mapForUri[uri] = new SourceMapConsumer(xhr.responseText)
           }
           this.sem.decr()
         })

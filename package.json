@@ -28,7 +28,14 @@
     "prepublish": "webpack"
   },
   "eslintConfig": {
-    "extends": "personal"
+    "extends": "personal",
+    "env": {
+      "browser": true,
+      "node": true
+    },
+    "globals": {
+      "ActiveXObject": false
+    }
   },
   "prettier": {
     "singleQuote": true,
