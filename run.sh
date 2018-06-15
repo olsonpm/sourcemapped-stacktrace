@@ -63,7 +63,7 @@ case "${command}" in
 
     build "$@"
 
-    cp -R index* README.md LICENSE package.json "${tmpReleaseDir}"
+    cp dist/index* README.md LICENSE package.json "${tmpReleaseDir}"
 
     changeDirectory "${tmpReleaseDir}"
     releaseVersion="$(jq -r .version ./package.json)"
