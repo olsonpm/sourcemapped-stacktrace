@@ -11,9 +11,7 @@ shift
 
 build() {
   rm -rf dist && mkdir dist
-  node_modules/.bin/babel sourcemapped-stacktrace.js \
-    -o dist/index.js \
-    --source-maps
+  node_modules/.bin/webpack --config config/webpack.js
 }
 
 warnAndExit() {
