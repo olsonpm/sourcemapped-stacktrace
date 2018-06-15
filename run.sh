@@ -67,7 +67,7 @@ case "${command}" in
 
     changeDirectory "${tmpReleaseDir}"
     releaseVersion="$(jq -r .version ./package.json)"
-    git add . && git commit -m "release ${releaseVersion}" && git tag "${releaseVersion}" && git push && git push origin "${releaseVersion}"
+    git add . && git commit -m "release ${releaseVersion}" && git tag "${releaseVersion}" && git push && git push olsonpm "${releaseVersion}"
 
     changeDirectory "${projectDir}"
     rm -rf "${tmpReleaseDir}"
