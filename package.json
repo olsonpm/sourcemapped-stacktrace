@@ -1,6 +1,6 @@
 {
   "name": "sourcemapped-stacktrace",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "homepage": "https://github.com/novocaine/sourcemapped-stacktrace",
   "license": "BSD-3-Clause",
   "author": {
@@ -34,5 +34,22 @@
     "singleQuote": true,
     "trailingComma": "es5",
     "semi": false
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "modules": false,
+          "targets": {
+            "browsers": [
+              "> 1%",
+              "last 2 versions",
+              "not ie <= 8"
+            ]
+          }
+        }
+      ]
+    ]
   }
 }
