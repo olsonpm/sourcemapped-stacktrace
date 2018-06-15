@@ -25,7 +25,6 @@ var global_mapForUri = {}
  * @param {Function} [opts.filter] - Filter function applied to each stackTrace line.
  *                                   Lines which do not pass the filter won't be processesd.
  * @param {boolean} [opts.cacheGlobally] - Whether to cache sourcemaps globally across multiple calls.
- * @param {boolean} [opts.sync] - Whether to use synchronous ajax to load the sourcemaps.
  */
 var mapStackTrace = function(stack, done, opts) {
   var lines
@@ -120,7 +119,6 @@ Semaphore.prototype.flush = function() {
 
 var Fetcher = function(opts) {
   this.sem = new Semaphore()
-  this.sync = opts && opts.sync
   this.mapForUri = opts && opts.cacheGlobally ? global_mapForUri : {}
 }
 
@@ -132,7 +130,7 @@ Fetcher.prototype.ajax = function(uri, callback) {
       callback.call(that, xhr, uri)
     }
   }
-  xhr.open('GET', uri, !this.sync)
+  xhr.open('GET', uri)
   xhr.send()
 }
 
