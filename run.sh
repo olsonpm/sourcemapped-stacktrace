@@ -30,7 +30,7 @@ case "${command}" in
     build "$@" ;;
 
   lint)
-    node node_modules/.bin/eslint --ext .js -- lib ;;
+    node node_modules/.bin/eslint --ext .js -- lib config ;;
 
   release)
     if [ ! -d /tmp ]; then

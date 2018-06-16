@@ -2,9 +2,10 @@
 // Imports //
 //---------//
 
-const babelConfig = require('./babel'),
-  FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin'),
-  path = require('path')
+import babelConfig from './babel'
+import FriendlyErrorsPlugin from 'friendly-errors-webpack-plugin'
+import path from 'path'
+import webpack from 'webpack'
 
 //
 //------//
@@ -18,17 +19,21 @@ const projectRootDir = path.resolve(__dirname, '..')
 // Main //
 //------//
 
-module.exports = {
+export default {
   mode: 'development',
   entry: path.resolve(__dirname, '../sourcemapped-stacktrace.js'),
   target: 'node',
   devtool: 'source-map',
   output: {
     libraryTarget: 'commonjs2',
+    libraryExport: 'default',
     filename: 'index.js',
     path: path.resolve(projectRootDir, 'dist'),
   },
-  plugins: [new FriendlyErrorsPlugin()],
+  plugins: [
+    new FriendlyErrorsPlugin(),
+    new webpack.optimize.ModuleConcatenationPlugin(),
+  ],
   module: {
     rules: [
       {
