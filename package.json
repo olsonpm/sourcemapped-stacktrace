@@ -10,18 +10,20 @@
   "main": "index.js",
   "description": "A simple module for applying source maps to JS stack traces in the browser.",
   "dependencies": {
-    "babel-loader": "^8.0.0-beta.3",
-    "friendly-errors-webpack-plugin": "^1.7.0",
-    "source-map": "^0.7.3",
-    "webpack": "^4.12.0"
+    "source-map": "^0.7.3"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.51",
     "@babel/preset-env": "^7.0.0-beta.51",
+    "babel-loader": "^8.0.0-beta.3",
+    "babel-plugin-macros": "^2.2.2",
+    "dedent": "github:olsonpm/dedent",
     "eslint": "^4.19.1",
     "eslint-config-personal": "github:olsonpm/eslint-config-personal",
     "esm": "^3.0.50",
+    "friendly-errors-webpack-plugin": "^1.7.0",
     "prettier": "^1.13.5",
+    "webpack": "^4.12.0",
     "webpack-cli": "^3.0.6"
   },
   "repository": {
