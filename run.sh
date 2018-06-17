@@ -11,7 +11,7 @@ shift
 
 build() {
   rm -rf dist && mkdir dist
-  node_modules/.bin/webpack --config config/webpack.js
+  node_modules/.bin/webpack --config-register esm
 }
 
 warnAndExit() {
@@ -30,7 +30,7 @@ case "${command}" in
     build "$@" ;;
 
   lint)
-    node node_modules/.bin/eslint --ext .js -- lib config ;;
+    node node_modules/.bin/eslint --ext .js -- lib webpack.config.js ;;
 
   release)
     if [ ! -d /tmp ]; then
