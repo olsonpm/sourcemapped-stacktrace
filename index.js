@@ -1,3 +1,492 @@
+module.exports =
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = "./lib/index.js");
+/******/ })
+/************************************************************************/
+/******/ ({
+
+/***/ "./lib/index.js":
+/*!**********************************!*\
+  !*** ./lib/index.js + 4 modules ***!
+  \**********************************/
+/*! exports provided: default */
+/*! ModuleConcatenation bailout: Cannot concat with external "dedent" (<- Module is not an ECMAScript module) */
+/*! ModuleConcatenation bailout: Cannot concat with external "error-stack-parser" (<- Module is not an ECMAScript module) */
+/*! ModuleConcatenation bailout: Cannot concat with external "source-map/lib/source-map-consumer" (<- Module is not an ECMAScript module) */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+
+// EXTERNAL MODULE: external "dedent"
+var external_dedent_ = __webpack_require__("dedent");
+var external_dedent_default = /*#__PURE__*/__webpack_require__.n(external_dedent_);
+
+// EXTERNAL MODULE: external "error-stack-parser"
+var external_error_stack_parser_ = __webpack_require__("error-stack-parser");
+var external_error_stack_parser_default = /*#__PURE__*/__webpack_require__.n(external_error_stack_parser_);
+
+// EXTERNAL MODULE: external "source-map/lib/source-map-consumer"
+var source_map_consumer_ = __webpack_require__("source-map/lib/source-map-consumer");
+
+// CONCATENATED MODULE: ./lib/create-source-map-consumer.js
+//
+// README
+//  - This method only exists because it felt too awkward getting a promise
+//    from a constructor.  At least now that awkward code only lives here!
+//
+
+
+
+/* harmony default export */ var create_source_map_consumer = ((...args) => new source_map_consumer_["SourceMapConsumer"](...args));
+
+// CONCATENATED MODULE: ./lib/semaphore.js
+//
+// TODO: remove this file and utilize promises instead
+//
+
+//------//
+// Main //
+//------//
+
+class Semaphore {
+  constructor() {
+    this.count = 0
+    this.pending = []
+  }
+
+  incr() {
+    this.count += 1
+  }
+
+  decr() {
+    this.count -= 1
+    this.flush()
+  }
+
+  whenReady(fn) {
+    this.pending.push(fn)
+    this.flush()
+  }
+
+  flush() {
+    if (this.count === 0) {
+      this.pending.forEach(function(fn) {
+        fn()
+      })
+      this.pending = []
+    }
+  }
+}
+
+//
+//---------//
+// Exports //
+//---------//
+
+/* harmony default export */ var semaphore = (Semaphore);
+
+// CONCATENATED MODULE: ./lib/helpers.js
+//------//
+// Main //
+//------//
+
+//
+// This is a crude way to bind all the functions on your prototype chain.  It
+//   doesn't check the input, so make sure to pass `this` from constructor
+//   functions (or classes).
+//
+// **Note this method binds all methods up the prototype except for Object,
+//   which will be the root prototype for all instances.
+//
+function bindAllPrototypeFunctions(instance) {
+  const prototypeChain = passThrough(instance, [
+    getPrototypeChain,
+    getAllButLast,
+  ])
+
+  prototypeChain.forEach(prototypeN => {
+    Object.getOwnPropertyNames(prototypeN)
+      .filter(key => {
+        return key !== 'constructor' && typeof instance[key] === 'function'
+      })
+      .forEach(key => {
+        instance[key] = instance[key].bind(instance)
+      })
+  })
+
+  return instance
+}
+
+const processSourceMaps = (parsedStack, fileNameToSourceMapConsumer) => {
+  return parsedStack.reduce((result, aStackFrame) => {
+    const {
+      fileName,
+      functionName,
+      lineNumber,
+      columnNumber,
+      source,
+    } = aStackFrame
+
+    const aSourceMapConsumer = fileNameToSourceMapConsumer[fileName]
+
+    if (!aSourceMapConsumer) return mAppend(source, result)
+
+    const sourceMapPosition = aSourceMapConsumer.originalPositionFor({
+      column: columnNumber,
+      line: lineNumber,
+    })
+
+    const formattedSourceMapFrame = getFormattedSourceMapFrame(
+      sourceMapPosition,
+      functionName
+    )
+
+    return mAppend(formattedSourceMapFrame, result)
+  }, [])
+}
+
+//
+//------------------//
+// Helper Functions //
+//------------------//
+
+//
+// 'm' stands for 'mutates' which refers to anArray being modified
+//
+function mAppend(anElement, anArray) {
+  anArray.push(anElement)
+  return anArray
+}
+
+function passThrough(something, arrayOfFunctions) {
+  return arrayOfFunctions.reduce(
+    (result, aFunction) => aFunction(result),
+    something
+  )
+}
+
+function getAllButLast(array) {
+  return array.slice(0, -1)
+}
+
+function getPrototypeChain(instance) {
+  const result = []
+
+  let currentPrototype = Reflect.getPrototypeOf(instance)
+
+  while (currentPrototype !== null) {
+    result.push(currentPrototype)
+    currentPrototype = Reflect.getPrototypeOf(currentPrototype)
+  }
+
+  return result
+}
+
+//
+// TODO: figure out a better name for this function
+//
+function getFormattedSourceMapFrame(sourceMapPosition, functionNamePerBrowser) {
+  const {
+    column,
+    line,
+    name: functionNamePerSourceMap,
+    source: sourcePerSourceMap,
+  } = sourceMapPosition
+
+  const functionName =
+    functionNamePerSourceMap || functionNamePerBrowser || '(unknown)'
+
+  const source = maybeTransformSource(sourcePerSourceMap)
+
+  return `    at ${functionName} (${source}:${line}:${column})`
+}
+
+function startsWith(possiblePrefix, stringToTest) {
+  const prefixLength = possiblePrefix.length
+  if (prefixLength > stringToTest) return false
+
+  return stringToTest.slice(0, prefixLength) === possiblePrefix
+}
+
+//
+// Currently this only transforms the source property if it's a webpack file.
+//   I'm leaving the function name generic because it may perform other
+//   transforms in the future.
+//
+function maybeTransformSource(sourcePerSourceMap) {
+  let result = sourcePerSourceMap
+
+  const webpackFile = 'webpack:///'
+
+  if (startsWith(webpackFile, sourcePerSourceMap)) {
+    const sourceAfterWebpackFile = sourcePerSourceMap.slice(webpackFile.length)
+    //
+    // This has not undergone much testing.  I only noticed in the chrome
+    //   debugger that console outputs this transformed path which allows us
+    //   to click it.
+    //
+    result = `${webpackFile}./${sourceAfterWebpackFile}`
+  }
+
+  return result
+}
+
+//
+//---------//
+// Exports //
+//---------//
+
+
+
+// CONCATENATED MODULE: ./lib/fetcher.js
+//---------//
+// Imports //
+//---------//
+
+
+
+
+
+
+//
+//------//
+// Init //
+//------//
+
+const absUrlRegex = new RegExp('^(?:[a-z]+:)?//', 'i'),
+  XMLHttpFactories = getXmlHttpFactories()
+
+//
+//------//
+// Main //
+//------//
+
+class fetcher_Fetcher {
+  constructor() {
+    bindAllPrototypeFunctions(this)
+    this.sem = new semaphore()
+    this.fileNameToSourceMapConsumer = {}
+  }
+
+  ajax(fileName, callback) {
+    const xhr = createXMLHTTPObject()
+
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState == 4) {
+        callback(xhr, fileName)
+      }
+    }
+    xhr.open('GET', fileName)
+    xhr.send()
+  }
+
+  fetchScript(fileName) {
+    if (!(fileName in this.fileNameToSourceMapConsumer)) {
+      this.sem.incr()
+      this.fileNameToSourceMapConsumer[fileName] = null
+    } else {
+      return
+    }
+
+    this.ajax(fileName, this.onScriptLoad)
+  }
+
+  async onScriptLoad(xhr, fileName) {
+    if (
+      xhr.status === 200 ||
+      (fileName.slice(0, 7) === 'file://' && xhr.status === 0)
+    ) {
+      // find .map in file.
+      //
+      // attempt to find it at the very end of the file, but tolerate trailing
+      // whitespace inserted by some packers.
+      const match = xhr.responseText.match(
+        '//# [s]ourceMappingURL=(.*)[\\s]*$',
+        'm'
+      )
+      if (match && match.length === 2) {
+        // get the map
+        let mapUri = match[1]
+
+        const embeddedSourceMap = mapUri.match(
+          'data:application/json;(charset=[^;]+;)?base64,(.*)'
+        )
+
+        if (embeddedSourceMap && embeddedSourceMap[2]) {
+          this.fileNameToSourceMapConsumer[
+            fileName
+          ] = await create_source_map_consumer(atob(embeddedSourceMap[2]))
+          this.sem.decr()
+        } else {
+          if (!absUrlRegex.test(mapUri)) {
+            // relative url; according to sourcemaps spec is 'source origin'
+            const lastSlash = fileName.lastIndexOf('/')
+            if (lastSlash !== -1) {
+              const origin = fileName.slice(0, lastSlash + 1)
+              mapUri = origin + mapUri
+              // note if lastSlash === -1, actual script fileName has no slash
+              // somehow, so no way to use it as a prefix... we give up and try
+              // as absolute
+            }
+          }
+
+          this.ajax(mapUri, async xhr => {
+            if (
+              xhr.status === 200 ||
+              (mapUri.slice(0, 7) === 'file://' && xhr.status === 0)
+            ) {
+              this.fileNameToSourceMapConsumer[
+                fileName
+              ] = await create_source_map_consumer(xhr.responseText)
+            }
+            this.sem.decr()
+          })
+        }
+      } else {
+        // no map
+        this.sem.decr()
+      }
+    } else {
+      // HTTP error fetching fileName of the script
+      this.sem.decr()
+    }
+  }
+}
+
+//
+//------------------//
+// Helper Functions //
+//------------------//
+
+function createXMLHTTPObject() {
+  let xmlhttp = false
+
+  for (let i = 0; i < XMLHttpFactories.length; i++) {
+    try {
+      xmlhttp = XMLHttpFactories[i]()
+    } catch (e) {
+      continue
+    }
+    break
+  }
+  return xmlhttp
+}
+
+function getXmlHttpFactories() {
+  return [
+    () => new XMLHttpRequest(),
+    () => new ActiveXObject('Msxml2.XMLHTTP'),
+    () => new ActiveXObject('Msxml3.XMLHTTP'),
+    () => new ActiveXObject('Microsoft.XMLHTTP'),
+  ]
+}
+
+//
+//---------//
+// Exports //
+//---------//
+
+/* harmony default export */ var lib_fetcher = (fetcher_Fetcher);
+
+// CONCATENATED MODULE: ./lib/index.js
+//
+// README
+//   - We're kind of stuck with the 'initialize' method unless and until
+//     source-map decides to make SourceMapConsumer a non-stateful singleton.
+//     Ideally they would have provided a factory method that allows us to
+//     initialize multiple SourceMapConsumer's.
+//
+
+//
+// TODO: reorganize SourceMapConsumer code to utilize its new `with` method.
+//   The goal is to remove the state being passed around because it makes the
+//   code more complex.
+//
+//   reference: https://github.com/mozilla/source-map#sourcemapconsumerwith
+//
+
 /*
  * sourcemapped-stacktrace.js
  * created by James Salter <iteration@gmail.com> (2014)
@@ -7,273 +496,145 @@
  * Licensed under the New BSD license. See LICENSE or:
  * http://opensource.org/licenses/BSD-3-Clause
  */
-var _require = require('source-map/lib/source-map-consumer'),
-    SourceMapConsumer = _require.SourceMapConsumer;
 
-var global_mapForUri = {};
-/**
- * Re-map entries in a stacktrace using sourcemaps if available.
- *
- * @param {Array} stack - Array of strings from the browser's stack
- *                        representation. Currently only Chrome
- *                        format is supported.
- * @param {function} done - Callback invoked with the transformed stacktrace
- *                          (an Array of Strings) passed as the first
- *                          argument
- * @param {Object} [opts] - Optional options object.
- * @param {Function} [opts.filter] - Filter function applied to each stackTrace line.
- *                                   Lines which do not pass the filter won't be processesd.
- * @param {boolean} [opts.cacheGlobally] - Whether to cache sourcemaps globally across multiple calls.
- * @param {boolean} [opts.sync] - Whether to use synchronous ajax to load the sourcemaps.
- */
+//---------//
+// Imports //
+//---------//
 
-var mapStackTrace = function mapStackTrace(stack, done, opts) {
-  var lines;
-  var line;
-  var mapForUri = {};
-  var rows = {};
-  var fields;
-  var uri;
-  var expected_fields;
-  var regex;
-  var skip_lines;
-  var fetcher = new Fetcher(opts);
 
-  if (isChromeOrEdge() || isIE11Plus()) {
-    regex = /^ +at.+\((.*):([0-9]+):([0-9]+)/;
-    expected_fields = 4; // (skip first line containing exception message)
 
-    skip_lines = 1;
-  } else if (isFirefox() || isSafari()) {
-    regex = /@(.*):([0-9]+):([0-9]+)/;
-    expected_fields = 4;
-    skip_lines = 0;
+
+
+
+
+
+
+//
+//------//
+// Init //
+//------//
+
+const anonymousRe = /<anonymous>/
+
+let hasInitialized = false
+
+//
+//------//
+// Main //
+//------//
+
+const initialize = ({ ignoreWarning, urlToMappingsWasm }) => {
+  if (!urlToMappingsWasm || typeof urlToMappingsWasm !== 'string') {
+    throw new Error(
+      external_dedent_default()(`
+        urlToMappingsWasm must be a non-empty string
+
+        typeof urlToMappingsWasm: ${typeof urlToMappingsWasm}
+        urlToMappingsWasm: ${urlToMappingsWasm}
+      `)
+    )
+  }
+
+  if (hasInitialized && !ignoreWarning) {
+    // eslint-disable-next-line no-console
+    console.error(
+      'You have already initialized sourcemapped-stacktrace so this function is a noop.'
+    )
   } else {
-    throw new Error('unknown browser :(');
+    hasInitialized = true
+    source_map_consumer_["SourceMapConsumer"].initialize({
+      'lib/mappings.wasm': urlToMappingsWasm,
+    })
   }
-
-  lines = stack.split('\n').slice(skip_lines);
-
-  for (var i = 0; i < lines.length; i++) {
-    line = lines[i];
-    if (opts && opts.filter && !opts.filter(line)) continue;
-    fields = line.match(regex);
-
-    if (fields && fields.length === expected_fields) {
-      rows[i] = fields;
-      uri = fields[1];
-
-      if (!uri.match(/<anonymous>/)) {
-        fetcher.fetchScript(uri);
-      }
-    }
-  }
-
-  fetcher.sem.whenReady(function () {
-    var result = processSourceMaps(lines, rows, fetcher.mapForUri);
-    done(result);
-  });
-};
-
-var isChromeOrEdge = function isChromeOrEdge() {
-  return navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
-};
-
-var isFirefox = function isFirefox() {
-  return navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-};
-
-var isSafari = function isSafari() {
-  return navigator.userAgent.toLowerCase().indexOf('safari') > -1;
-};
-
-var isIE11Plus = function isIE11Plus() {
-  return document.documentMode && document.documentMode >= 11;
-};
-
-var Semaphore = function Semaphore() {
-  this.count = 0;
-  this.pending = [];
-};
-
-Semaphore.prototype.incr = function () {
-  this.count++;
-};
-
-Semaphore.prototype.decr = function () {
-  this.count--;
-  this.flush();
-};
-
-Semaphore.prototype.whenReady = function (fn) {
-  this.pending.push(fn);
-  this.flush();
-};
-
-Semaphore.prototype.flush = function () {
-  if (this.count === 0) {
-    this.pending.forEach(function (fn) {
-      fn();
-    });
-    this.pending = [];
-  }
-};
-
-var Fetcher = function Fetcher(opts) {
-  this.sem = new Semaphore();
-  this.sync = opts && opts.sync;
-  this.mapForUri = opts && opts.cacheGlobally ? global_mapForUri : {};
-};
-
-Fetcher.prototype.ajax = function (uri, callback) {
-  var xhr = createXMLHTTPObject();
-  var that = this;
-
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState == 4) {
-      callback.call(that, xhr, uri);
-    }
-  };
-
-  xhr.open('GET', uri, !this.sync);
-  xhr.send();
-};
-
-Fetcher.prototype.fetchScript = function (uri) {
-  if (!(uri in this.mapForUri)) {
-    this.sem.incr();
-    this.mapForUri[uri] = null;
-  } else {
-    return;
-  }
-
-  this.ajax(uri, this.onScriptLoad);
-};
-
-var absUrlRegex = new RegExp('^(?:[a-z]+:)?//', 'i');
-
-Fetcher.prototype.onScriptLoad = function (xhr, uri) {
-  if (xhr.status === 200 || uri.slice(0, 7) === 'file://' && xhr.status === 0) {
-    // find .map in file.
-    //
-    // attempt to find it at the very end of the file, but tolerate trailing
-    // whitespace inserted by some packers.
-    var match = xhr.responseText.match('//# [s]ourceMappingURL=(.*)[\\s]*$', 'm');
-
-    if (match && match.length === 2) {
-      // get the map
-      var mapUri = match[1];
-      var embeddedSourceMap = mapUri.match('data:application/json;(charset=[^;]+;)?base64,(.*)');
-
-      if (embeddedSourceMap && embeddedSourceMap[2]) {
-        this.mapForUri[uri] = new source_map_consumer.SourceMapConsumer(atob(embeddedSourceMap[2]));
-        this.sem.decr();
-      } else {
-        if (!absUrlRegex.test(mapUri)) {
-          // relative url; according to sourcemaps spec is 'source origin'
-          var origin;
-          var lastSlash = uri.lastIndexOf('/');
-
-          if (lastSlash !== -1) {
-            origin = uri.slice(0, lastSlash + 1);
-            mapUri = origin + mapUri; // note if lastSlash === -1, actual script uri has no slash
-            // somehow, so no way to use it as a prefix... we give up and try
-            // as absolute
-          }
-        }
-
-        this.ajax(mapUri, function (xhr) {
-          if (xhr.status === 200 || mapUri.slice(0, 7) === 'file://' && xhr.status === 0) {
-            this.mapForUri[uri] = new source_map_consumer.SourceMapConsumer(xhr.responseText);
-          }
-
-          this.sem.decr();
-        });
-      }
-    } else {
-      // no map
-      this.sem.decr();
-    }
-  } else {
-    // HTTP error fetching uri of the script
-    this.sem.decr();
-  }
-};
-
-var processSourceMaps = function processSourceMaps(lines, rows, mapForUri) {
-  var result = [];
-  var map;
-
-  for (var i = 0; i < lines.length; i++) {
-    var row = rows[i];
-
-    if (row) {
-      var uri = row[1];
-      var line = parseInt(row[2], 10);
-      var column = parseInt(row[3], 10);
-      map = mapForUri[uri];
-
-      if (map) {
-        // we think we have a map for that uri. call source-map library
-        var origPos = map.originalPositionFor({
-          line: line,
-          column: column
-        });
-        result.push(formatOriginalPosition(origPos.source, origPos.line, origPos.column, origPos.name || origName(lines[i])));
-      } else {
-        // we can't find a map for that url, but we parsed the row.
-        // reformat unchanged line for consistency with the sourcemapped
-        // lines.
-        result.push(formatOriginalPosition(uri, line, column, origName(lines[i])));
-      }
-    } else {
-      // we weren't able to parse the row, push back what we were given
-      result.push(lines[i]);
-    }
-  }
-
-  return result;
-};
-
-function origName(origLine) {
-  var match = String(origLine).match(isChromeOrEdge() || isIE11Plus() ? / +at +([^ ]*).*/ : /([^@]*)@.*/);
-  return match && match[1];
 }
 
-var formatOriginalPosition = function formatOriginalPosition(source, line, column, name) {
-  // mimic chrome's format
-  return '    at ' + (name ? name : '(unknown)') + ' (' + source + ':' + line + ':' + column + ')';
-}; // xmlhttprequest boilerplate
-
-
-var XMLHttpFactories = [function () {
-  return new XMLHttpRequest();
-}, function () {
-  return new ActiveXObject('Msxml2.XMLHTTP');
-}, function () {
-  return new ActiveXObject('Msxml3.XMLHTTP');
-}, function () {
-  return new ActiveXObject('Microsoft.XMLHTTP');
-}];
-
-function createXMLHTTPObject() {
-  var xmlhttp = false;
-
-  for (var i = 0; i < XMLHttpFactories.length; i++) {
+const mapStackTrace = anError => {
+  return new Promise((resolve, reject) => {
     try {
-      xmlhttp = XMLHttpFactories[i]();
+      if (!hasInitialized) {
+        throw new Error(
+          'You must run `initialize` before calling `mapStackTrace`'
+        )
+      }
+
+      const fetcher = new lib_fetcher(),
+        parsedStack = external_error_stack_parser_default.a.parse(anError)
+
+      parsedStack
+        .filter(aStackFrame => {
+          return aStackFrame.fileName && !anonymousRe.test(aStackFrame.fileName)
+        })
+        .forEach(aStackFrame => {
+          fetcher.fetchScript(aStackFrame.fileName)
+        })
+
+      fetcher.sem.whenReady(() => {
+        const result = processSourceMaps(
+          parsedStack,
+          fetcher.fileNameToSourceMapConsumer
+        )
+
+        const { fileNameToSourceMapConsumer } = fetcher
+
+        Object.keys(fileNameToSourceMapConsumer)
+          .filter(fileName => fileNameToSourceMapConsumer[fileName])
+          .forEach(fileName => {
+            fetcher.fileNameToSourceMapConsumer[fileName].destroy()
+          })
+
+        resolve(result)
+      })
     } catch (e) {
-      continue;
+      reject(e)
     }
-
-    break;
-  }
-
-  return xmlhttp;
+  })
 }
 
-module.exports = {
-  mapStackTrace: mapStackTrace
-};
+//
+//---------//
+// Exports //
+//---------//
 
+/* harmony default export */ var lib = __webpack_exports__["default"] = ({ initialize, mapStackTrace });
+
+
+/***/ }),
+
+/***/ "dedent":
+/*!*************************!*\
+  !*** external "dedent" ***!
+  \*************************/
+/*! no static exports found */
+/*! ModuleConcatenation bailout: Module is not an ECMAScript module */
+/***/ (function(module, exports) {
+
+module.exports = require("dedent");
+
+/***/ }),
+
+/***/ "error-stack-parser":
+/*!*************************************!*\
+  !*** external "error-stack-parser" ***!
+  \*************************************/
+/*! no static exports found */
+/*! ModuleConcatenation bailout: Module is not an ECMAScript module */
+/***/ (function(module, exports) {
+
+module.exports = require("error-stack-parser");
+
+/***/ }),
+
+/***/ "source-map/lib/source-map-consumer":
+/*!*****************************************************!*\
+  !*** external "source-map/lib/source-map-consumer" ***!
+  \*****************************************************/
+/*! no static exports found */
+/*! ModuleConcatenation bailout: Module is not an ECMAScript module */
+/***/ (function(module, exports) {
+
+module.exports = require("source-map/lib/source-map-consumer");
+
+/***/ })
+
+/******/ })["default"];
 //# sourceMappingURL=index.js.map

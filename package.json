@@ -1,6 +1,6 @@
 {
   "name": "sourcemapped-stacktrace",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "homepage": "https://github.com/novocaine/sourcemapped-stacktrace",
   "license": "BSD-3-Clause",
   "author": {
@@ -10,15 +10,19 @@
   "main": "index.js",
   "description": "A simple module for applying source maps to JS stack traces in the browser.",
   "dependencies": {
+    "error-stack-parser": "^2.0.2",
     "source-map": "^0.7.3"
   },
   "devDependencies": {
-    "@babel/cli": "^7.0.0-beta.51",
-    "@babel/core": "^7.0.0-beta.51",
-    "@babel/preset-env": "^7.0.0-beta.51",
+    "dedent": "github:olsonpm/dedent",
     "eslint": "^4.19.1",
     "eslint-config-personal": "github:olsonpm/eslint-config-personal",
-    "prettier": "^1.13.5"
+    "esm": "^3.0.50",
+    "friendly-errors-webpack-plugin": "^1.7.0",
+    "prettier": "^1.13.5",
+    "webpack": "^4.12.0",
+    "webpack-cli": "^3.0.6",
+    "webpack-node-externals": "^1.7.2"
   },
   "repository": {
     "type": "git",
@@ -28,28 +32,18 @@
     "prepublish": "webpack"
   },
   "eslintConfig": {
-    "extends": "personal"
+    "extends": "personal",
+    "env": {
+      "browser": true,
+      "node": true
+    },
+    "globals": {
+      "ActiveXObject": false
+    }
   },
   "prettier": {
     "singleQuote": true,
     "trailingComma": "es5",
     "semi": false
-  },
-  "babel": {
-    "presets": [
-      [
-        "@babel/preset-env",
-        {
-          "modules": false,
-          "targets": {
-            "browsers": [
-              "> 1%",
-              "last 2 versions",
-              "not ie <= 8"
-            ]
-          }
-        }
-      ]
-    ]
   }
 }
