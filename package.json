@@ -1,6 +1,6 @@
 {
   "name": "sourcemapped-stacktrace",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "homepage": "https://github.com/novocaine/sourcemapped-stacktrace",
   "license": "BSD-3-Clause",
   "author": {
@@ -10,7 +10,9 @@
   "main": "index.js",
   "description": "A simple module for applying source maps to JS stack traces in the browser.",
   "dependencies": {
-    "error-stack-parser": "^2.0.2",
+    "error-stack-parser": "^2.0.2"
+  },
+  "peerDependencies": {
     "source-map": "^0.7.3"
   },
   "devDependencies": {
