@@ -92,6 +92,7 @@ module.exports =
   !*** ./lib/index.js + 4 modules ***!
   \**********************************/
 /*! exports provided: default */
+/*! ModuleConcatenation bailout: Cannot concat with external "axios" (<- Module is not an ECMAScript module) */
 /*! ModuleConcatenation bailout: Cannot concat with external "dedent" (<- Module is not an ECMAScript module) */
 /*! ModuleConcatenation bailout: Cannot concat with external "error-stack-parser" (<- Module is not an ECMAScript module) */
 /*! ModuleConcatenation bailout: Cannot concat with external "source-map/lib/source-map-consumer" (<- Module is not an ECMAScript module) */
@@ -109,6 +110,10 @@ var external_error_stack_parser_default = /*#__PURE__*/__webpack_require__.n(ext
 
 // EXTERNAL MODULE: external "source-map/lib/source-map-consumer"
 var source_map_consumer_ = __webpack_require__("source-map/lib/source-map-consumer");
+
+// EXTERNAL MODULE: external "axios"
+var external_axios_ = __webpack_require__("axios");
+var external_axios_default = /*#__PURE__*/__webpack_require__.n(external_axios_);
 
 // CONCATENATED MODULE: ./lib/create-source-map-consumer.js
 //
@@ -198,6 +203,8 @@ function bindAllPrototypeFunctions(instance) {
 
   return instance
 }
+
+const justReturn = something => () => something
 
 const processSourceMaps = (parsedStack, fileNameToSourceMapConsumer) => {
   return parsedStack.reduce((result, aStackFrame) => {
@@ -330,13 +337,15 @@ function maybeTransformSource(sourcePerSourceMap) {
 
 
 
+
 //
 //------//
 // Init //
 //------//
 
-const absUrlRegex = new RegExp('^(?:[a-z]+:)?//', 'i'),
-  XMLHttpFactories = getXmlHttpFactories()
+const absUrlRegex = /^(?:[a-z]+:)?\/\//i,
+  embeddedSourceMapRe = /data:application\/json;(charset=[^;]+;)?base64,(.*)/,
+  sourceMapUrlRe = /\/\/# [s]ourceMappingURL=(.*)[\\s]*$/m
 
 //
 //------//
@@ -344,94 +353,102 @@ const absUrlRegex = new RegExp('^(?:[a-z]+:)?//', 'i'),
 //------//
 
 class fetcher_Fetcher {
-  constructor() {
+  constructor({ shouldSkipRequest }) {
     bindAllPrototypeFunctions(this)
+    this.shouldSkipRequest = shouldSkipRequest
     this.sem = new semaphore()
     this.fileNameToSourceMapConsumer = {}
   }
 
-  ajax(fileName, callback) {
-    const xhr = createXMLHTTPObject()
-
-    xhr.onreadystatechange = () => {
-      if (xhr.readyState == 4) {
-        callback(xhr, fileName)
-      }
+  ajax(fileName) {
+    if (this.shouldSkipRequest(fileName)) {
+      this.sem.decr()
+      return Promise.resolve({
+        fileName,
+        requestWasSkipped: true,
+      })
     }
-    xhr.open('GET', fileName)
-    xhr.send()
+
+    return external_axios_default.a
+      .get(fileName)
+      .then(response => response.text())
+      .then(fileContent => ({ fileContent, fileName }))
+      .catch(this.decrementSemaphoreAndRejectError)
   }
 
   fetchScript(fileName) {
-    if (!(fileName in this.fileNameToSourceMapConsumer)) {
-      this.sem.incr()
-      this.fileNameToSourceMapConsumer[fileName] = null
-    } else {
-      return
-    }
+    if (fileName in this.fileNameToSourceMapConsumer) return
 
-    this.ajax(fileName, this.onScriptLoad)
+    this.sem.incr()
+    this.fileNameToSourceMapConsumer[fileName] = null
+    this.ajax(fileName).then(ifRequestWasNotSkipped(this.onScriptLoad))
   }
 
-  async onScriptLoad(xhr, fileName) {
-    if (
-      xhr.status === 200 ||
-      (fileName.slice(0, 7) === 'file://' && xhr.status === 0)
-    ) {
-      // find .map in file.
-      //
-      // attempt to find it at the very end of the file, but tolerate trailing
-      // whitespace inserted by some packers.
-      const match = xhr.responseText.match(
-        '//# [s]ourceMappingURL=(.*)[\\s]*$',
-        'm'
-      )
-      if (match && match.length === 2) {
-        // get the map
-        let mapUri = match[1]
-
-        const embeddedSourceMap = mapUri.match(
-          'data:application/json;(charset=[^;]+;)?base64,(.*)'
-        )
-
-        if (embeddedSourceMap && embeddedSourceMap[2]) {
-          this.fileNameToSourceMapConsumer[
-            fileName
-          ] = await create_source_map_consumer(atob(embeddedSourceMap[2]))
-          this.sem.decr()
-        } else {
-          if (!absUrlRegex.test(mapUri)) {
-            // relative url; according to sourcemaps spec is 'source origin'
-            const lastSlash = fileName.lastIndexOf('/')
-            if (lastSlash !== -1) {
-              const origin = fileName.slice(0, lastSlash + 1)
-              mapUri = origin + mapUri
-              // note if lastSlash === -1, actual script fileName has no slash
-              // somehow, so no way to use it as a prefix... we give up and try
-              // as absolute
-            }
-          }
-
-          this.ajax(mapUri, async xhr => {
-            if (
-              xhr.status === 200 ||
-              (mapUri.slice(0, 7) === 'file://' && xhr.status === 0)
-            ) {
-              this.fileNameToSourceMapConsumer[
-                fileName
-              ] = await create_source_map_consumer(xhr.responseText)
-            }
-            this.sem.decr()
-          })
-        }
-      } else {
-        // no map
+  handleEmbeddedSourceMap(content, fileName) {
+    return create_source_map_consumer(atob(content))
+      .catch(this.decrementSemaphoreAndRejectError)
+      .then(aSourceMapConsumer => {
+        this.fileNameToSourceMapConsumer[fileName] = aSourceMapConsumer
         this.sem.decr()
-      }
-    } else {
-      // HTTP error fetching fileName of the script
+      })
+  }
+
+  decrementSemaphoreAndRejectError(e) {
+    this.sem.decr()
+    return Promise.reject(e)
+  }
+
+  handleRemoteSourcemap({ fileContent, fileName }) {
+    return Promise.all([create_source_map_consumer(fileContent), fileName])
+      .catch(this.decrementSemaphoreAndRejectError)
+      .then(([aSourceMapConsumer, fileName]) => {
+        this.sem.decr()
+        this.fileNameToSourceMapConsumer[fileName] = aSourceMapConsumer
+      })
+  }
+
+  //
+  // TODO: Clean up this method so the shortcutting return statements make
+  //   more sense
+  //
+  // TODO: See if external libraries exist which handle all this custom parsing
+  //
+  onScriptLoad([fileContent, fileName]) {
+    // find .map in file.
+    //
+    // attempt to find it at the very end of the file, but tolerate trailing
+    // whitespace inserted by some packers.
+    const match = fileContent.match(sourceMapUrlRe)
+
+    if (!match || match.length !== 2) {
+      // no map
       this.sem.decr()
+      return Promise.resolve()
     }
+
+    // get the map
+    let mapUri = match[1]
+
+    const embeddedSourceMap = mapUri.match(embeddedSourceMapRe),
+      content = embeddedSourceMap && embeddedSourceMap[2]
+
+    if (content) return this.handleEmbeddedSourceMap(content, fileName)
+
+    if (!absUrlRegex.test(mapUri)) {
+      // relative url; according to sourcemaps spec is 'source origin'
+      const lastSlash = fileName.lastIndexOf('/')
+      if (lastSlash !== -1) {
+        const origin = fileName.slice(0, lastSlash + 1)
+        mapUri = origin + mapUri
+        // note if lastSlash === -1, actual script fileName has no slash
+        // somehow, so no way to use it as a prefix... we give up and try
+        // as absolute
+      }
+    }
+
+    return this.ajax(mapUri).then(
+      ifRequestWasNotSkipped(this.handleRemoteSourcemap)
+    )
   }
 }
 
@@ -440,27 +457,10 @@ class fetcher_Fetcher {
 // Helper Functions //
 //------------------//
 
-function createXMLHTTPObject() {
-  let xmlhttp = false
-
-  for (let i = 0; i < XMLHttpFactories.length; i++) {
-    try {
-      xmlhttp = XMLHttpFactories[i]()
-    } catch (e) {
-      continue
-    }
-    break
+function ifRequestWasNotSkipped(callback) {
+  return result => {
+    return result.requestWasSkipped ? undefined : callback(result)
   }
-  return xmlhttp
-}
-
-function getXmlHttpFactories() {
-  return [
-    () => new XMLHttpRequest(),
-    () => new ActiveXObject('Msxml2.XMLHTTP'),
-    () => new ActiveXObject('Msxml3.XMLHTTP'),
-    () => new ActiveXObject('Microsoft.XMLHTTP'),
-  ]
 }
 
 //
@@ -548,7 +548,9 @@ const initialize = ({ ignoreWarning, urlToMappingsWasm }) => {
   }
 }
 
-const mapStackTrace = anError => {
+const mapStackTrace = (anError, options = {}) => {
+  const { shouldSkipRequest = justReturn(false), timeoutMs = 2000 } = options
+
   return new Promise((resolve, reject) => {
     try {
       if (!hasInitialized) {
@@ -557,7 +559,7 @@ const mapStackTrace = anError => {
         )
       }
 
-      const fetcher = new lib_fetcher(),
+      const fetcher = new lib_fetcher({ shouldSkipRequest }),
         parsedStack = external_error_stack_parser_default.a.parse(anError)
 
       parsedStack
@@ -567,6 +569,21 @@ const mapStackTrace = anError => {
         .forEach(aStackFrame => {
           fetcher.fetchScript(aStackFrame.fileName)
         })
+
+      waitMs(timeoutMs).then(() =>
+        reject(
+          new Error(
+            external_dedent_default()(`
+              mapStackTrace has timed out
+
+              timeoutMs: ${timeoutMs}
+
+              you can pass a more appropriate 'timeoutMs' value as an option if
+              this does not suit your needs.
+            `)
+          )
+        )
+      )
 
       fetcher.sem.whenReady(() => {
         const result = processSourceMaps(
@@ -591,12 +608,35 @@ const mapStackTrace = anError => {
 }
 
 //
+//------------------//
+// Helper Functions //
+//------------------//
+
+function waitMs(ms) {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms)
+  })
+}
+
+//
 //---------//
 // Exports //
 //---------//
 
 /* harmony default export */ var lib = __webpack_exports__["default"] = ({ initialize, mapStackTrace });
 
+
+/***/ }),
+
+/***/ "axios":
+/*!************************!*\
+  !*** external "axios" ***!
+  \************************/
+/*! no static exports found */
+/*! ModuleConcatenation bailout: Module is not an ECMAScript module */
+/***/ (function(module, exports) {
+
+module.exports = require("axios");
 
 /***/ }),
 
