@@ -516,14 +516,12 @@ function ifRequestWasNotSkipped(callback) {
 
 const anonymousRe = /<anonymous>/
 
-let hasInitialized = false
-
 //
 //------//
 // Main //
 //------//
 
-const initialize = ({ ignoreWarning, urlToMappingsWasm }) => {
+const initialize = ({ urlToMappingsWasm }) => {
   if (!urlToMappingsWasm || typeof urlToMappingsWasm !== 'string') {
     throw new Error(
       external_dedent_default()(`
@@ -535,17 +533,9 @@ const initialize = ({ ignoreWarning, urlToMappingsWasm }) => {
     )
   }
 
-  if (hasInitialized && !ignoreWarning) {
-    // eslint-disable-next-line no-console
-    console.error(
-      'You have already initialized sourcemapped-stacktrace so this function is a noop.'
-    )
-  } else {
-    hasInitialized = true
-    source_map_consumer_["SourceMapConsumer"].initialize({
-      'lib/mappings.wasm': urlToMappingsWasm,
-    })
-  }
+  source_map_consumer_["SourceMapConsumer"].initialize({
+    'lib/mappings.wasm': urlToMappingsWasm,
+  })
 }
 
 const mapStackTrace = (anError, options = {}) => {
@@ -553,12 +543,6 @@ const mapStackTrace = (anError, options = {}) => {
 
   return new Promise((resolve, reject) => {
     try {
-      if (!hasInitialized) {
-        throw new Error(
-          'You must run `initialize` before calling `mapStackTrace`'
-        )
-      }
-
       const fetcher = new lib_fetcher({ shouldSkipRequest }),
         parsedStack = external_error_stack_parser_default.a.parse(anError)
 
