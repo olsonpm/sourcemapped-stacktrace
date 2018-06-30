@@ -89,7 +89,7 @@ module.exports =
 
 /***/ "./lib/index.js":
 /*!**********************************!*\
-  !*** ./lib/index.js + 4 modules ***!
+  !*** ./lib/index.js + 3 modules ***!
   \**********************************/
 /*! exports provided: default */
 /*! ModuleConcatenation bailout: Cannot concat with external "axios" (<- Module is not an ECMAScript module) */
@@ -126,52 +126,6 @@ var external_axios_default = /*#__PURE__*/__webpack_require__.n(external_axios_)
 
 /* harmony default export */ var create_source_map_consumer = ((...args) => new source_map_consumer_["SourceMapConsumer"](...args));
 
-// CONCATENATED MODULE: ./lib/semaphore.js
-//
-// TODO: remove this file and utilize promises instead
-//
-
-//------//
-// Main //
-//------//
-
-class Semaphore {
-  constructor() {
-    this.count = 0
-    this.pending = []
-  }
-
-  incr() {
-    this.count += 1
-  }
-
-  decr() {
-    this.count -= 1
-    this.flush()
-  }
-
-  whenReady(fn) {
-    this.pending.push(fn)
-    this.flush()
-  }
-
-  flush() {
-    if (this.count === 0) {
-      this.pending.forEach(function(fn) {
-        fn()
-      })
-      this.pending = []
-    }
-  }
-}
-
-//
-//---------//
-// Exports //
-//---------//
-
-/* harmony default export */ var semaphore = (Semaphore);
-
 // CONCATENATED MODULE: ./lib/helpers.js
 //------//
 // Main //
@@ -206,8 +160,8 @@ function bindAllPrototypeFunctions(instance) {
 
 const justReturn = something => () => something
 
-const processSourceMaps = (parsedStack, fileNameToSourceMapConsumer) => {
-  return parsedStack.reduce((result, aStackFrame) => {
+const processSourceMaps = (arrayOfStackFrames, fileNameToSourceMapConsumer) => {
+  return arrayOfStackFrames.reduce((result, aStackFrame) => {
     const {
       fileName,
       functionName,
@@ -328,10 +282,15 @@ function maybeTransformSource(sourcePerSourceMap) {
 
 
 // CONCATENATED MODULE: ./lib/fetcher.js
+//
+// TODO: look into making these promises cancelable, because they do a good
+//   amount of work and if the consumer decides they want to reject in the case
+//   of a failed fetch, then all that work is for naught.
+//
+
 //---------//
 // Imports //
 //---------//
-
 
 
 
@@ -353,16 +312,17 @@ const absUrlRegex = /^(?:[a-z]+:)?\/\//i,
 //------//
 
 class fetcher_Fetcher {
-  constructor({ shouldSkipRequest }) {
+  constructor({ onFetchRejection, shouldSkipRequest }) {
     bindAllPrototypeFunctions(this)
-    this.shouldSkipRequest = shouldSkipRequest
-    this.sem = new semaphore()
-    this.fileNameToSourceMapConsumer = {}
+    Object.assign(this, {
+      onFetchRejection,
+      shouldSkipRequest,
+      fileNameToSourceMapConsumer: {},
+    })
   }
 
   ajax(fileName) {
     if (this.shouldSkipRequest(fileName)) {
-      this.sem.decr()
       return Promise.resolve({
         fileName,
         requestWasSkipped: true,
@@ -373,38 +333,35 @@ class fetcher_Fetcher {
       .get(fileName)
       .then(response => response.text())
       .then(fileContent => ({ fileContent, fileName }))
-      .catch(this.decrementSemaphoreAndRejectError)
   }
 
   fetchScript(fileName) {
-    if (fileName in this.fileNameToSourceMapConsumer) return
+    if (fileName in this.fileNameToSourceMapConsumer) return Promise.resolve()
 
-    this.sem.incr()
     this.fileNameToSourceMapConsumer[fileName] = null
-    this.ajax(fileName).then(ifRequestWasNotSkipped(this.onScriptLoad))
+    this.ajax(fileName)
+      .then(ifRequestWasNotSkipped(this.onScriptLoad))
+      //
+      // Any number of reasons could cause a rejection when fetching a
+      //   sourcemap, and processSourceMaps will take what it can get and
+      //   fallback to the original source line when a sourcemapConsumer isn't
+      //   available.  This is why the default onFetchRejection is a noop.
+      //
+      .catch(this.onFetchRejection)
   }
 
   handleEmbeddedSourceMap(content, fileName) {
-    return create_source_map_consumer(atob(content))
-      .catch(this.decrementSemaphoreAndRejectError)
-      .then(aSourceMapConsumer => {
-        this.fileNameToSourceMapConsumer[fileName] = aSourceMapConsumer
-        this.sem.decr()
-      })
-  }
-
-  decrementSemaphoreAndRejectError(e) {
-    this.sem.decr()
-    return Promise.reject(e)
+    return create_source_map_consumer(atob(content)).then(aSourceMapConsumer => {
+      this.fileNameToSourceMapConsumer[fileName] = aSourceMapConsumer
+    })
   }
 
   handleRemoteSourcemap({ fileContent, fileName }) {
-    return Promise.all([create_source_map_consumer(fileContent), fileName])
-      .catch(this.decrementSemaphoreAndRejectError)
-      .then(([aSourceMapConsumer, fileName]) => {
-        this.sem.decr()
+    return Promise.all([create_source_map_consumer(fileContent), fileName]).then(
+      ([aSourceMapConsumer, fileName]) => {
         this.fileNameToSourceMapConsumer[fileName] = aSourceMapConsumer
-      })
+      }
+    )
   }
 
   //
@@ -420,11 +377,8 @@ class fetcher_Fetcher {
     // whitespace inserted by some packers.
     const match = fileContent.match(sourceMapUrlRe)
 
-    if (!match || match.length !== 2) {
-      // no map
-      this.sem.decr()
-      return Promise.resolve()
-    }
+    // no map
+    if (!match || match.length !== 2) return Promise.resolve()
 
     // get the map
     let mapUri = match[1]
@@ -514,7 +468,8 @@ function ifRequestWasNotSkipped(callback) {
 // Init //
 //------//
 
-const anonymousRe = /<anonymous>/
+const anonymousRe = /<anonymous>/,
+  noop = () => {}
 
 //
 //------//
@@ -539,20 +494,26 @@ const initialize = ({ urlToMappingsWasm }) => {
 }
 
 const mapStackTrace = (anError, options = {}) => {
-  const { shouldSkipRequest = justReturn(false), timeoutMs = 2000 } = options
+  const {
+    onFetchRejection = noop,
+    shouldSkipRequest = justReturn(false),
+    timeoutMs = 3000,
+  } = options
 
   return new Promise((resolve, reject) => {
     try {
-      const fetcher = new lib_fetcher({ shouldSkipRequest }),
-        parsedStack = external_error_stack_parser_default.a.parse(anError)
+      const fetcher = new lib_fetcher({ onFetchRejection, shouldSkipRequest }),
+        arrayOfStackFrames = external_error_stack_parser_default.a.parse(anError)
 
-      parsedStack
-        .filter(aStackFrame => {
-          return aStackFrame.fileName && !anonymousRe.test(aStackFrame.fileName)
-        })
-        .forEach(aStackFrame => {
-          fetcher.fetchScript(aStackFrame.fileName)
-        })
+      //
+      // TODO: rewrite this to reduce the stack frames into
+      //   `fileNameToSourceMapConsumer` as opposed to have fetcher maintain
+      //   that state on its own.  That means we'd need `resolveAllProperties`
+      //   instead of `Promise.all`, but that's ezpz.
+      //
+      const fetchAllSourcemaps = arrayOfStackFrames
+        .filter(({ fileName }) => fileName && !anonymousRe.test(fileName))
+        .map(aStackFrame => fetcher.fetchScript(aStackFrame.fileName))
 
       waitMs(timeoutMs).then(() =>
         reject(
@@ -569,22 +530,24 @@ const mapStackTrace = (anError, options = {}) => {
         )
       )
 
-      fetcher.sem.whenReady(() => {
-        const result = processSourceMaps(
-          parsedStack,
-          fetcher.fileNameToSourceMapConsumer
-        )
+      Promise.all(fetchAllSourcemaps)
+        .then(() => {
+          const result = processSourceMaps(
+            arrayOfStackFrames,
+            fetcher.fileNameToSourceMapConsumer
+          )
 
-        const { fileNameToSourceMapConsumer } = fetcher
+          const { fileNameToSourceMapConsumer } = fetcher
 
-        Object.keys(fileNameToSourceMapConsumer)
-          .filter(fileName => fileNameToSourceMapConsumer[fileName])
-          .forEach(fileName => {
-            fetcher.fileNameToSourceMapConsumer[fileName].destroy()
-          })
+          Object.keys(fileNameToSourceMapConsumer)
+            .filter(fileName => fileNameToSourceMapConsumer[fileName])
+            .forEach(fileName => {
+              fetcher.fileNameToSourceMapConsumer[fileName].destroy()
+            })
 
-        resolve(result)
-      })
+          resolve(result)
+        })
+        .catch(reject)
     } catch (e) {
       reject(e)
     }
