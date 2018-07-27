@@ -93,16 +93,16 @@ module.exports =
   \**********************************/
 /*! exports provided: default */
 /*! ModuleConcatenation bailout: Cannot concat with external "axios" (<- Module is not an ECMAScript module) */
-/*! ModuleConcatenation bailout: Cannot concat with external "dedent" (<- Module is not an ECMAScript module) */
 /*! ModuleConcatenation bailout: Cannot concat with external "error-stack-parser" (<- Module is not an ECMAScript module) */
 /*! ModuleConcatenation bailout: Cannot concat with external "source-map/lib/source-map-consumer" (<- Module is not an ECMAScript module) */
+/*! ModuleConcatenation bailout: Cannot concat with external "tedent" (<- Module is not an ECMAScript module) */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 
-// EXTERNAL MODULE: external "dedent"
-var external_dedent_ = __webpack_require__("dedent");
-var external_dedent_default = /*#__PURE__*/__webpack_require__.n(external_dedent_);
+// EXTERNAL MODULE: external "tedent"
+var external_tedent_ = __webpack_require__("tedent");
+var external_tedent_default = /*#__PURE__*/__webpack_require__.n(external_tedent_);
 
 // EXTERNAL MODULE: external "error-stack-parser"
 var external_error_stack_parser_ = __webpack_require__("error-stack-parser");
@@ -479,7 +479,7 @@ const anonymousRe = /<anonymous>/,
 const initialize = ({ urlToMappingsWasm }) => {
   if (!urlToMappingsWasm || typeof urlToMappingsWasm !== 'string') {
     throw new Error(
-      external_dedent_default()(`
+      external_tedent_default()(`
         urlToMappingsWasm must be a non-empty string
 
         typeof urlToMappingsWasm: ${typeof urlToMappingsWasm}
@@ -518,7 +518,7 @@ const mapStackTrace = (anError, options = {}) => {
       waitMs(timeoutMs).then(() =>
         reject(
           new Error(
-            external_dedent_default()(`
+            external_tedent_default()(`
               mapStackTrace has timed out
 
               timeoutMs: ${timeoutMs}
@@ -587,18 +587,6 @@ module.exports = require("axios");
 
 /***/ }),
 
-/***/ "dedent":
-/*!*************************!*\
-  !*** external "dedent" ***!
-  \*************************/
-/*! no static exports found */
-/*! ModuleConcatenation bailout: Module is not an ECMAScript module */
-/***/ (function(module, exports) {
-
-module.exports = require("dedent");
-
-/***/ }),
-
 /***/ "error-stack-parser":
 /*!*************************************!*\
   !*** external "error-stack-parser" ***!
@@ -620,6 +608,18 @@ module.exports = require("error-stack-parser");
 /***/ (function(module, exports) {
 
 module.exports = require("source-map/lib/source-map-consumer");
+
+/***/ }),
+
+/***/ "tedent":
+/*!*************************!*\
+  !*** external "tedent" ***!
+  \*************************/
+/*! no static exports found */
+/*! ModuleConcatenation bailout: Module is not an ECMAScript module */
+/***/ (function(module, exports) {
+
+module.exports = require("tedent");
 
 /***/ })
 

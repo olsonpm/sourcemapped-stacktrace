@@ -1,6 +1,6 @@
 {
   "name": "sourcemapped-stacktrace",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "homepage": "https://github.com/novocaine/sourcemapped-stacktrace",
   "license": "BSD-3-Clause",
   "author": {
@@ -11,13 +11,13 @@
   "description": "A simple module for applying source maps to JS stack traces in the browser.",
   "dependencies": {
     "axios": "^0.18.0",
-    "error-stack-parser": "^2.0.2"
+    "error-stack-parser": "^2.0.2",
+    "tedent": "github:olsonpm/tedent#0.1.0"
   },
   "peerDependencies": {
     "source-map": "^0.7.3"
   },
   "devDependencies": {
-    "dedent": "github:olsonpm/dedent",
     "eslint": "^4.19.1",
     "eslint-config-personal": "github:olsonpm/eslint-config-personal",
     "esm": "^3.0.50",
@@ -30,9 +30,6 @@
   "repository": {
     "type": "git",
     "url": "http://github.com/olsonpm/sourcemapped-stacktrace"
-  },
-  "scripts": {
-    "prepublish": "webpack"
   },
   "eslintConfig": {
     "extends": "personal",
