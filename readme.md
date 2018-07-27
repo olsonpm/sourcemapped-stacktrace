@@ -1,4 +1,4 @@
-This is a simple module for applying source maps to JS stack traces in the browser. 
+This is a simple module for applying source maps to JS stack traces in the browser.
 
 ## The problem this solves
 
@@ -31,7 +31,7 @@ loader or a plain old script include. As an AMD module it exposes the method
 'mapStackTrace'. If an AMD loader is not found this function will be set on
 window.sourceMappedStackTrace.mapStackTrace.
 
-## API 
+## API
 
 ### mapStackTrace(stack, done [, opts])
 
@@ -39,42 +39,47 @@ Re-map entries in a stacktrace using sourcemaps if available.
 
 **Arguments:**
 
-- *stack*: Array of strings from the browser's stack representation. 
+- _stack_: Array of strings from the browser's stack representation.
 
-- *done*: Callback invoked with the transformed stacktrace (an Array of Strings) passed as the first argument
+- _done_: Callback invoked with the transformed stacktrace (an Array of Strings) passed as the first argument
 
-- *opts*: Optional options object containing:
-  - *filter*: Function that filters each stacktrace line.
-              It is invoked with _(line)_ and should return truthy/ falsy value.
-              Sources which do not pass the filter won't be processed.
-  - *cacheGlobally*: Boolean. If `true`, sourcemaps are cached across multiple `mapStackTrace()` calls,
-                     allowing for better performance if called repeatedly, or when browser's cache is disabled.
-                     Defaults to `false`.
+- _opts_: Optional options object containing:
+  - _filter_: Function that filters each stacktrace line.
+    It is invoked with _(line)_ and should return truthy/ falsy value.
+    Sources which do not pass the filter won't be processed.
+  - _cacheGlobally_: Boolean. If `true`, sourcemaps are cached across multiple `mapStackTrace()` calls,
+    allowing for better performance if called repeatedly, or when browser's cache is disabled.
+    Defaults to `false`.
 
 **Supported browsers**
-  - Chrome
-  - Firefox
-  - Safari
-  - Internet Explorer 11 and up
-  - Microsoft Edge
+
+- Chrome
+- Firefox
+- Safari
+- Internet Explorer 11 and up
+- Microsoft Edge
 
 ## Example
 
 ```javascript
 try {
   // break something
-  bork();
+  bork()
 } catch (e) {
   // pass e.stack to window.mapStackTrace
-  window.mapStackTrace(e.stack, function(mappedStack) {
-    // do what you want with mappedStack here
-    console.log(mappedStack.join("\n"));
-  }, {
-    filter: function (line) {
-      // process only sources containing `spec.js`
-      return /(spec\.js)/.test(line);
+  window.mapStackTrace(
+    e.stack,
+    function(mappedStack) {
+      // do what you want with mappedStack here
+      console.log(mappedStack.join('\n'))
+    },
+    {
+      filter: function(line) {
+        // process only sources containing `spec.js`
+        return /(spec\.js)/.test(line)
+      },
     }
-  });
+  )
 }
 ```
 
@@ -93,9 +98,9 @@ would be easy to support those formats by ripping off [stacktrace.js](https://gi
 
 ## Known issues
 
-* Doesn't support exception formats of any browser other than Chrome and
+- Doesn't support exception formats of any browser other than Chrome and
   Firefox
-* Only supports JS containing //# sourceMappingURL= declarations (i.e. no
+- Only supports JS containing //# sourceMappingURL= declarations (i.e. no
   support for the SourceMap: HTTP header (yet)
-* Some prominent sourcemap generators (including CoffeeScript, Traceur, Babel)
+- Some prominent sourcemap generators (including CoffeeScript, Traceur, Babel)
   don't emit a list of 'names' in the source-map, which means that frames from transpiled code will have (unknown) instead of the original function name. Those generators should support this feature better.
