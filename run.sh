@@ -69,11 +69,11 @@ case "${command}" in
 
     build "$@"
 
-    cp dist/index* README.md LICENSE package.json "${tmpReleaseDir}"
+    cp dist/index* readme.md license package.json "${tmpReleaseDir}"
 
     changeDirectory "${tmpReleaseDir}"
     releaseVersion="$(jq -r .version ./package.json)"
-    git add . && git commit -m "release ${releaseVersion}" && git tag "${releaseVersion}" && git push && git push olsonpm "${releaseVersion}"
+    git add . && git commit -m "release ${releaseVersion}" && git tag "${releaseVersion}" && git push && git push origin "${releaseVersion}"
 
     changeDirectory "${projectDir}"
     rm -rf "${tmpReleaseDir}"
