@@ -33,10 +33,18 @@ case "${command}" in
     node node_modules/.bin/eslint --ext .js -- lib webpack.config.js ;;
 
   release)
+    shouldAbortRelease='false'
     if [ ! -d /tmp ]; then
       echo "/tmp directory does not exist" >&2
-      echo "aborting release" >&2
-      exit
+      shouldAbortRelease='true'
+    fi
+    if ! [ -x "$(command -v jq)" ]; then
+      echo "'jq' is not installed." >&2
+      shouldAbortRelease='true'
+    fi
+    if [ "${shouldAbortRelease}" = 'true' ]; then
+      echo 'aborting release' >&2
+      exit 1
     fi
 
     repoName='sourcemapped-stacktrace'
